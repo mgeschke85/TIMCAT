@@ -10,6 +10,7 @@ from ncet import learn
 from ncet import get_indirect_costs
 from ncet import sum_accounts
 from ncet import get_sub_account_iloc
+from ncet import sort_accounts
 import cProfile
 import datetime
 
@@ -204,6 +205,8 @@ def run_ncet(
     os.mkdir(path + "/out/" + plant + time_folder)
     os.mkdir(path + "/out/" + plant + time_folder + "/raw")
     os.mkdir(path + "/out/" + plant + time_folder + "/scaling_tables")
+    for order in range(orders):
+        os.mkdir(path + "/out/" + plant + time_folder + "/Base_" + str(order))
 
     # Run the cost modeling functions
     mc_dict_list = [[] for _ in range(orders)]
@@ -281,6 +284,7 @@ def run_ncet(
                 dfNP, plant_characteristics, learning_rate[j], scalars_dict
             )
             dfNP = sum_accounts.sum_accounts(dfNP, idx_dict)
+            structures, systems, components = sort_accounts.sort_accounts(dfNP)
 
             # Build an output dictionary of all the results for monte carlo
             if mc_runs != 1:
@@ -307,10 +311,47 @@ def run_ncet(
                     + "/out/"
                     + plant
                     + time_folder
+                    + "/Base_"
+                    + str(j)
                     + "/new"
                     + plant
-                    + "_Base_"
+                    + "_total"
+                    + ".csv"
+                )
+                structures.to_csv(
+                    path
+                    + "/out/"
+                    + plant
+                    + time_folder
+                    + "/Base_"
                     + str(j)
+                    + "/new"
+                    + plant
+                    + "_structures"
+                    + ".csv"
+                )
+                systems.to_csv(
+                    path
+                    + "/out/"
+                    + plant
+                    + time_folder
+                    + "/Base_"
+                    + str(j)
+                    + "/new"
+                    + plant
+                    + "_systems"
+                    + ".csv"
+                )
+                components.to_csv(
+                    path
+                    + "/out/"
+                    + plant
+                    + time_folder
+                    + "/Base_"
+                    + str(j)
+                    + "/new"
+                    + plant
+                    + "_components"
                     + ".csv"
                 )
 
@@ -355,7 +396,7 @@ if __name__ == "__main__":
     # cases: match those on param_ranges
     # orders: how many plants to run the learning model out to and capitalize the factory costs over
 
-    plant = "PWR12ME"
+    plant = "MIGHTR_1x50"
     BASIS_FNAME = (
         "./PWR12_ME_inflated_reduced.csv"
     )
